@@ -38,6 +38,18 @@ async function run() {
             const result = await userCollection.deleteOne(query)
             res.send(result)
         })
+        // make a user admin
+        app.patch('/users/admin/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)}
+            const updateDoc = {
+                $set: {
+                    rule: 'admin',
+                }
+            }
+            const result = await userCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
         app.post('/users', async(req, res) => {
             const userData = req.body;
             const query = {email: userData.email}
