@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const cors = require('cors')
 require('dotenv').config()
 const app = express();
@@ -26,22 +27,28 @@ async function run() {
         const menuCollection = client.db('bistroDB').collection('menu')
         const reviewCollection = client.db('bistroDB').collection('reviews')
         const cartCollection = client.db('bistroDB').collection('carts')
+        // jwt related api
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '2h' })
+            res.send({ token })
+        })
         // user related api
-        app.get('/users', async(req, res) => {
+        app.get('/users', async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result)
         })
         // delete a user
-        app.delete('/users/:id', async(req, res) => {
+        app.delete('/users/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await userCollection.deleteOne(query)
             res.send(result)
         })
         // make a user admin
-        app.patch('/users/admin/:id', async(req, res) => {
+        app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
                     rule: 'admin',
@@ -50,12 +57,12 @@ async function run() {
             const result = await userCollection.updateOne(query, updateDoc)
             res.send(result)
         })
-        app.post('/users', async(req, res) => {
+        app.post('/users', async (req, res) => {
             const userData = req.body;
-            const query = {email: userData.email}
+            const query = { email: userData.email }
             const isExits = await userCollection.findOne(query);
-            if(isExits){
-                return res.send({message: "User already exists ", insertedId: null})
+            if (isExits) {
+                return res.send({ message: "User already exists ", insertedId: null })
             }
             const result = await userCollection.insertOne(userData)
             res.send(result)
@@ -69,22 +76,22 @@ async function run() {
             res.send(result)
         })
         // save the food on server as cart
-        app.post('/carts', async(req, res) => {
+        app.post('/carts', async (req, res) => {
             const foodItem = req.body;
             const result = await cartCollection.insertOne(foodItem)
             res.send(result)
         })
         // get the cart data
-        app.get('/carts', async(req, res) => {
+        app.get('/carts', async (req, res) => {
             const email = req.query.email;
-            const query = {email: email}
+            const query = { email: email }
             const result = await cartCollection.find(query).toArray();
             res.send(result)
         })
         // delete a cart item 
-        app.delete('/carts/:id', async(req, res) => {
+        app.delete('/carts/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await cartCollection.deleteOne(query);
             res.send(result)
         })
