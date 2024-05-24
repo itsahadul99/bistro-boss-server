@@ -52,15 +52,15 @@ async function run() {
             const query = { email: email }
             const user = await userCollection.findOne(query)
             const isAdmin = user?.role === 'admin';
-            if(!isAdmin){
-               return res.status(403).send({ message: "Forbidden" })
+            if (!isAdmin) {
+                return res.status(403).send({ message: "Forbidden" })
             }
             next()
         }
         // cheek is admin 
         app.get('/users/admin/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
-            if(email !== req.decoded.email){
+            if (email !== req.decoded.email) {
                 return res.status(403).send({ message: "Forbidden" })
             }
             const query = { email: email }
@@ -96,9 +96,39 @@ async function run() {
             res.send(result)
         })
         // add menu food on server 
-        app.post('/menu', verifyToken, verifyAdmin, async(req, res) => {
+        app.post('/menu', verifyToken, verifyAdmin, async (req, res) => {
             const menu = req.body;
             const result = await menuCollection.insertOne(menu)
+            res.send(result)
+        })
+        // delete a menu item 
+        app.delete('/menu/:id', verifyToken, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await menuCollection.deleteOne(query)
+            res.send(result)
+        })
+        // update a menu item 
+        app.patch('/menu/update/:id', async (req, res) => {
+            const id = req.params.id;
+            const updateMenu = req.body;
+            const filter = { _id: new ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    recipe: updateMenu.details,
+                    name: updateMenu.recipeName,
+                    price: updateMenu.price,
+                    category: updateMenu.category
+                }
+            }
+            const result = await menuCollection.updateOne(filter, updateDoc)
+            res.send(result)
+        })
+        // get a menu item data for update
+        app.get('/menu/update/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await menuCollection.findOne(query)
             res.send(result)
         })
         app.post('/users', async (req, res) => {
