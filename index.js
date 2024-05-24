@@ -58,10 +58,8 @@ async function run() {
             next()
         }
         // cheek is admin 
-        app.get('/users/admin/:email', verifyToken, verifyAdmin, async (req, res) => {
+        app.get('/users/admin/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
-            console.log(email);
-            console.log(req.decoded.email)
             if(email !== req.decoded.email){
                 return res.status(403).send({ message: "Forbidden" })
             }
@@ -74,7 +72,7 @@ async function run() {
             res.send({ admin })
         })
         // user related api
-        app.get('/users', verifyToken, async (req, res) => {
+        app.get('/users', verifyToken, verifyAdmin, async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result)
         })
@@ -95,6 +93,12 @@ async function run() {
                 }
             }
             const result = await userCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
+        // add menu food on server 
+        app.post('/menu', verifyToken, verifyAdmin, async(req, res) => {
+            const menu = req.body;
+            const result = await menuCollection.insertOne(menu)
             res.send(result)
         })
         app.post('/users', async (req, res) => {
