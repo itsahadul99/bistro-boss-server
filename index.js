@@ -148,8 +148,15 @@ async function run() {
             const result = await menuCollection.find().toArray()
             res.send(result)
         })
+        // get all the review
         app.get('/review', async (req, res) => {
             const result = await reviewCollection.find().toArray()
+            res.send(result)
+        })
+        // save a review
+        app.post('/review', async(req, res) => {
+            const reviewData = req.body;
+            const result = await reviewCollection.insertOne(reviewData)
             res.send(result)
         })
         // save the food on server as cart
